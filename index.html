@@ -1,0 +1,2436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Japan 2026">
+<meta name="theme-color" content="#1a1410">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Japan 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root {
+  --ink: #1a1410;
+  --paper: #f7f3ee;
+  --muted: #8a7f74;
+  --accent-sakura: #d4748a;
+  --accent-moss: #4a6741;
+  --accent-fuji: #5b7fa6;
+  --accent-gold: #c8943a;
+  --divider: #ddd5c8;
+  --card-bg: #ffffff;
+  --tab-height: 64px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  font-weight: 300;
+  line-height: 1.6;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── TAB SYSTEM ── */
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--tab-height) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: var(--ink);
+  display: flex;
+  z-index: 100;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  color: rgba(247,243,238,0.4);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 8px 4px;
+}
+
+.tab-btn.active { color: var(--accent-sakura); }
+.tab-btn svg { width: 22px; height: 22px; }
+
+.tab-content {
+  display: none;
+  padding-bottom: calc(var(--tab-height) + var(--safe-bottom) + 20px);
+  min-height: 100dvh;
+}
+
+.tab-content.active { display: block; }
+
+/* ── HERO (compact for mobile) ── */
+.hero {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 52px 24px 36px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '日本';
+  position: absolute;
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 140px;
+  color: rgba(255,255,255,0.03);
+  font-family: serif;
+  line-height: 1;
+  letter-spacing: -8px;
+  pointer-events: none;
+}
+
+.hero-eyebrow {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent-sakura);
+  margin-bottom: 14px;
+}
+
+.hero h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 38px;
+  font-weight: 300;
+  line-height: 1.05;
+  margin-bottom: 20px;
+}
+
+.hero h1 em { font-style: italic; color: var(--accent-sakura); }
+
+.hero-meta {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.hero-meta-item {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(247,243,238,0.4);
+}
+
+.hero-meta-item span {
+  display: block;
+  color: var(--paper);
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+  margin-top: 3px;
+  font-weight: 400;
+}
+
+/* ── REGION ── */
+.region {
+  padding: 0 20px;
+  margin-bottom: 12px;
+}
+
+.region-header {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  padding: 28px 0 14px;
+  border-bottom: 1px solid var(--divider);
+  margin-bottom: 20px;
+  position: sticky;
+  top: 0;
+  background: var(--paper);
+  z-index: 10;
+}
+
+.region-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 48px;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--divider);
+}
+
+.region-tag {
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.region-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.region-dates {
+  margin-left: auto;
+  text-align: right;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.3;
+  flex-shrink: 0;
+}
+
+/* ── DAY CARD ── */
+.day {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 0 16px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.day:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 21px;
+  top: 40px;
+  bottom: -20px;
+  width: 1px;
+  background: var(--divider);
+}
+
+.day-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 10px;
+}
+
+.day-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  background: var(--paper);
+  flex-shrink: 0;
+  margin-bottom: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.day-num {
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+.day-card {
+  background: var(--card-bg);
+  border-radius: 6px;
+  border: 1px solid var(--divider);
+  padding: 16px 18px;
+  transition: box-shadow 0.2s;
+}
+
+.day-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.day-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 19px;
+  font-weight: 400;
+}
+
+.day-subtitle {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
+/* ── TAGS ── */
+.tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 12px; }
+
+.tag {
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.tag-travel { background: #f0ede8; color: var(--muted); }
+.tag-food { background: #fdf5f0; color: #a06020; }
+.tag-nature { background: #e6ede4; color: #3d5c35; }
+.tag-temple { background: #f5ede0; color: #a06020; }
+.tag-hike { background: #e8f0e6; color: var(--accent-moss); }
+.tag-culture { background: #f7eee5; color: #8a5520; }
+.tag-blossom { background: #fdeef2; color: var(--accent-sakura); }
+.tag-reserved { background: #fff3e0; color: #b07020; border: 1px solid #e8c88a; }
+.tag-bike { background: #e8eff7; color: var(--accent-fuji); }
+
+/* ── SCHEDULE ITEMS ── */
+.schedule { list-style: none; }
+
+.schedule li {
+  display: flex;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 13px;
+  border-bottom: 1px solid #f5f1ec;
+  align-items: flex-start;
+}
+
+.schedule li:last-child { border-bottom: none; }
+
+.sch-time {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  min-width: 48px;
+  flex-shrink: 0;
+  padding-top: 2px;
+  font-weight: 400;
+}
+
+.sch-icon { width: 18px; flex-shrink: 0; text-align: center; padding-top: 1px; font-size: 14px; }
+.sch-text { flex: 1; }
+.sch-text strong { font-weight: 500; }
+.sch-detail { font-size: 12px; color: var(--muted); margin-top: 3px; display: block; }
+
+/* ── MAP/LINK BUTTONS ── */
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+
+.btn-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  text-decoration: none;
+  letter-spacing: 0.3px;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: transform 0.1s, box-shadow 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-link:active { transform: scale(0.96); }
+
+.btn-map {
+  background: #e8eff7;
+  color: var(--accent-fuji);
+}
+
+.btn-reserve {
+  background: #fff3e0;
+  color: #b07020;
+  border: 1px solid #e8c88a;
+}
+
+.btn-direction {
+  background: #e6ede4;
+  color: var(--accent-moss);
+}
+
+.btn-link svg { width: 14px; height: 14px; }
+
+/* ── TRAVEL CONNECTOR ── */
+.travel-connector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  margin: 0 20px 20px;
+  background: #f0ede8;
+  border-radius: 6px;
+  border: 1px dashed var(--divider);
+  font-size: 12px;
+}
+
+.tc-arrow { color: var(--muted); font-size: 16px; font-weight: 600; }
+.tc-route { font-weight: 500; font-size: 13px; }
+.tc-detail { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* ── HOTEL CARDS ── */
+.hotel-card {
+  background: var(--card-bg);
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+  margin: 0 20px 16px;
+  overflow: hidden;
+}
+
+.hotel-accent {
+  height: 4px;
+  width: 100%;
+}
+
+.hotel-body { padding: 18px 20px; }
+
+.hotel-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 400;
+  margin-bottom: 4px;
+}
+
+.hotel-region {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.hotel-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.hotel-field label {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.hotel-field .val {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.hotel-field .val.mono {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+.hotel-address {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+  padding-top: 12px;
+  border-top: 1px solid var(--divider);
+}
+
+.hotel-copy-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.btn-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  background: #f0ede8;
+  color: var(--ink);
+  border: 1px solid var(--divider);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.15s;
+}
+
+.btn-copy:active { background: #e4dfd8; }
+.btn-copy.copied { background: #e6ede4; color: var(--accent-moss); border-color: var(--accent-moss); }
+
+/* ── TRANSPORT CARDS ── */
+.transport-card {
+  background: var(--card-bg);
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+  margin: 0 20px 16px;
+  padding: 18px 20px;
+}
+
+.transport-route {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.transport-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.transport-arrow { color: var(--muted); font-size: 18px; }
+
+.transport-from, .transport-to {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.transport-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+
+.transport-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── SUGGESTIONS SECTION ── */
+.suggestion-card {
+  background: var(--card-bg);
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+  margin: 0 20px 16px;
+  padding: 18px 20px;
+}
+
+.suggestion-card h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+
+.suggestion-card p {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.suggestion-region-tag {
+  display: inline-block;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+}
+
+/* ── SECTION HEADERS (for non-itinerary tabs) ── */
+.section-header {
+  padding: 28px 20px 16px;
+  position: sticky;
+  top: 0;
+  background: var(--paper);
+  z-index: 10;
+}
+
+.section-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 300;
+}
+
+.section-header .subtitle {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+/* ── TIP BOX ── */
+.tip-box {
+  background: #f9f6f1;
+  border-left: 3px solid var(--accent-gold);
+  padding: 12px 14px;
+  margin-top: 12px;
+  font-size: 12px;
+  border-radius: 0 6px 6px 0;
+  line-height: 1.5;
+}
+
+.tip-box strong {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  display: block;
+  margin-bottom: 3px;
+}
+
+/* ── RESERVATION BADGE ── */
+.reservation-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #fff8ee;
+  border: 1px solid #e8d4a0;
+  border-radius: 6px;
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.reservation-badge .rb-icon { font-size: 16px; }
+.reservation-badge .rb-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent-gold); }
+.reservation-badge .rb-id { font-family: 'SF Mono', monospace; font-weight: 600; font-size: 13px; letter-spacing: 1px; }
+
+/* ── EMPTY STATE ── */
+.empty-day {
+  padding: 14px 18px;
+  background: #f9f7f4;
+  border-radius: 6px;
+  border: 1px dashed var(--divider);
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* ── COUNTDOWN ── */
+.countdown-bar {
+  background: linear-gradient(135deg, var(--accent-sakura), #c06070);
+  color: white;
+  text-align: center;
+  padding: 10px 20px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.countdown-bar .days-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 300;
+  display: block;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+/* ── TODAY HIGHLIGHT ── */
+.day-card.today {
+  border-color: var(--accent-sakura);
+  border-width: 2px;
+  box-shadow: 0 2px 16px rgba(212,116,138,0.15);
+}
+
+.today-badge {
+  display: inline-block;
+  background: var(--accent-sakura);
+  color: white;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+/* ── QUICK INFO BAR ── */
+.quick-info {
+  display: flex;
+  gap: 12px;
+  padding: 14px 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.quick-info::-webkit-scrollbar { display: none; }
+
+.quick-chip {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--card-bg);
+  border: 1px solid var(--divider);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.quick-chip .chip-icon { font-size: 14px; }
+
+/* ── SCROLL TO TOP ── */
+.scroll-top {
+  position: fixed;
+  bottom: calc(var(--tab-height) + var(--safe-bottom) + 16px);
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 50;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  font-size: 18px;
+}
+
+.scroll-top.visible { display: flex; }
+
+/* ── FOOD NOTE ── */
+.food-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #fdf8f4;
+  border-radius: 6px;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  line-height: 1.5;
+}
+
+/* ── MAP TAB ── */
+#map {
+  width: 100%;
+  height: calc(100dvh - var(--tab-height) - var(--safe-bottom) - 100px);
+  min-height: 400px;
+  border-radius: 0;
+}
+
+.map-header {
+  padding: 20px 20px 14px;
+  background: var(--paper);
+}
+
+.map-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 300;
+}
+
+.map-header .subtitle {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.map-legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 10px 20px 14px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.map-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.map-legend-dot {
+  width: 12px;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.map-location-label {
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+
+.map-location-label.active-location {
+  background: var(--accent-sakura);
+  font-weight: 600;
+  animation: pulse-label 2s ease-in-out infinite;
+}
+
+@keyframes pulse-label {
+  0%, 100% { box-shadow: 0 2px 8px rgba(212,116,138,0.3); }
+  50% { box-shadow: 0 2px 16px rgba(212,116,138,0.6); }
+}
+
+.today-marker {
+  width: 20px;
+  height: 20px;
+  background: var(--accent-sakura);
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(212,116,138,0.5);
+  animation: pulse-marker 2s ease-in-out infinite;
+}
+
+@keyframes pulse-marker {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+</style>
+</head>
+<body>
+
+<!-- COUNTDOWN BAR -->
+<div class="countdown-bar" id="countdownBar">
+  <span class="days-num" id="countdownNum"></span>
+  <span id="countdownText"></span>
+  <div id="welcomeMsg" style="margin-top:6px;font-size:13px;font-weight:300;opacity:0.9;line-height:1.4;font-style:italic;"></div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- TAB 1: ITINERARY                       -->
+<!-- ═══════════════════════════════════════ -->
+<div class="tab-content active" id="tab-itinerary">
+
+  <div class="hero">
+    <p class="hero-eyebrow">April 2026 · 2 Travellers</p>
+    <h1>Japan in<br><em>Cherry Blossom</em><br>Season</h1>
+    <div class="hero-meta">
+      <div class="hero-meta-item">Dates <span>14 – 26 April</span></div>
+      <div class="hero-meta-item">Duration <span>13 Days</span></div>
+      <div class="hero-meta-item">Regions <span>Osaka · Kyoto · Fuji · Tokyo</span></div>
+    </div>
+  </div>
+
+  <div class="quick-info">
+    <div class="quick-chip"><span class="chip-icon">🌸</span> Cherry Blossom Season</div>
+    <div class="quick-chip"><span class="chip-icon">🥦</span> Vegetarian-Friendly</div>
+    <div class="quick-chip"><span class="chip-icon">🚲</span> Bikes in Kyoto</div>
+    <div class="quick-chip"><span class="chip-icon">🏔️</span> Lake Yamanaka</div>
+  </div>
+
+  <!-- ═══ REGION 1: OSAKA ═══ -->
+  <div class="region">
+    <div class="region-header">
+      <div class="region-num">01</div>
+      <div>
+        <div class="region-tag">Arrival · Gateway</div>
+        <div class="region-title">Osaka</div>
+      </div>
+      <div class="region-dates">Apr 14 – 16<br><small>2 nights</small></div>
+    </div>
+
+    <!-- Day 1: Tue 14 Apr -->
+    <div class="day" data-date="2026-04-14">
+      <div class="day-date">
+        <div class="day-dot" style="color: var(--muted)"></div>
+        <div class="day-num">APR 14</div>
+      </div>
+      <div class="day-card">
+        <div class="day-header">
+          <div class="day-title">Arrival in Osaka</div>
+          <div class="day-subtitle">Tuesday · Day 1</div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-travel">Travel</span>
+          <span class="tag tag-food">Food</span>
+        </div>
+        <ul class="schedule">
+          <li>
+            <span class="sch-time">~13:00</span>
+            <span class="sch-icon">✈️</span>
+            <span class="sch-text"><strong>Sabine arrives</strong></span>
+          </li>
+          <li>
+            <span class="sch-time">13:45</span>
+            <span class="sch-icon">🚃</span>
+            <span class="sch-text"><strong>Travel to Osaka</strong> — Train from airport (~1 hr)
+              <span class="sch-detail">¥1,910 per person</span>
+              <div class="btn-row">
+                <a href="https://maps.app.goo.gl/W95LpJ4KwUTh3QCq8" target="_blank" class="btn-link btn-map">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Directions
+                </a>
+              </div>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">14:45</span>
+            <span class="sch-icon">🏨</span>
+            <span class="sch-text"><strong>Check in</strong> — ParkCentral Sakura Hotel
+              <span class="sch-detail">Freshen up, get ready</span>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">15:30</span>
+            <span class="sch-icon">🚶</span>
+            <span class="sch-text"><strong>Walk to Dotonbori</strong> (~21 min)
+              <div class="btn-row">
+                <a href="https://maps.app.goo.gl/rgVAkBV85fAmNpyB8" target="_blank" class="btn-link btn-map">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Walking Route
+                </a>
+              </div>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">15:30</span>
+            <span class="sch-icon">🍜</span>
+            <span class="sch-text"><strong>Eat in Dotonbori</strong> — Explore the food street (~1 hr)</span>
+          </li>
+          <li>
+            <span class="sch-time">Evening</span>
+            <span class="sch-icon">🌿</span>
+            <span class="sch-text"><strong>Walk around</strong> — Soak in the neon atmosphere</span>
+          </li>
+          <li>
+            <span class="sch-time">Dinner</span>
+            <span class="sch-icon">🥦</span>
+            <span class="sch-text"><strong>Vegan Dinner</strong>
+              <div class="btn-row">
+                <a href="https://maps.app.goo.gl/rYxXMrNLePavEuqMA" target="_blank" class="btn-link btn-map">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Restaurant
+                </a>
+              </div>
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Day 2: Wed 15 Apr -->
+    <div class="day" data-date="2026-04-15">
+      <div class="day-date">
+        <div class="day-dot" style="color: var(--accent-moss)"></div>
+        <div class="day-num">APR 15</div>
+      </div>
+      <div class="day-card">
+        <div class="day-header">
+          <div class="day-title">Horie & Amemura</div>
+          <div class="day-subtitle">Wednesday · Day 2</div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-culture">Culture</span>
+          <span class="tag tag-food">Food</span>
+        </div>
+        <ul class="schedule">
+          <li>
+            <span class="sch-time">07:30</span>
+            <span class="sch-icon">🚶</span>
+            <span class="sch-text"><strong>Walk to Horie</strong> (~30 min)
+              <div class="btn-row">
+                <a href="https://maps.app.goo.gl/QXNmgDTFJibHM19Q7" target="_blank" class="btn-link btn-map">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Route
+                </a>
+              </div>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">08:00</span>
+            <span class="sch-icon">☕</span>
+            <span class="sch-text"><strong>Breakfast in Horie</strong> (~1 hr)
+              <div class="btn-row">
+                <a href="https://maps.app.goo.gl/4daytUNQV3EboVS67" target="_blank" class="btn-link btn-map">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Location
+                </a>
+              </div>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">10:00</span>
+            <span class="sch-icon">🛍️</span>
+            <span class="sch-text"><strong>Horie Viertel</strong> (~4 hrs)
+              <span class="sch-detail">Vintage shops, cafes, Cafe Biotop (rooftop terrace with plants), Hi Sandwich / Westwood Bakers, The Flavor Design (create your own perfume)</span>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">Afternoon</span>
+            <span class="sch-icon">🎨</span>
+            <span class="sch-text"><strong>Amemura Viertel</strong> — Vintage shops & cafes
+              <div class="btn-row">
+                <a href="https://maps.app.goo.gl/RA3FYEGSXD71Reso9" target="_blank" class="btn-link btn-map">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Amemura
+                </a>
+              </div>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">Later</span>
+            <span class="sch-icon">🏯</span>
+            <span class="sch-text"><strong>Osaka Castle</strong> — If time permits</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TRAVEL: Osaka → Nara → Kyoto ═══ -->
+  <div class="travel-connector">
+    <div class="tc-arrow">→</div>
+    <div class="tc-info">
+      <div class="tc-route">Osaka → Nara → Kyoto</div>
+      <div class="tc-detail">Day trip to Nara, then train to Kyoto in the evening · ¥780 + ¥910 pp</div>
+    </div>
+  </div>
+
+  <!-- ═══ REGION 2: NARA DAY + KYOTO ═══ -->
+  <div class="region">
+    <div class="region-header">
+      <div class="region-num">02</div>
+      <div>
+        <div class="region-tag">Ancient Capital · 4 Nights</div>
+        <div class="region-title">Kyoto</div>
+      </div>
+      <div class="region-dates">Apr 16 – 20<br><small>4 nights</small></div>
+    </div>
+
+    <!-- Day 3: Thu 16 Apr — Nara Day Trip + Kyoto -->
+    <div class="day" data-date="2026-04-16">
+      <div class="day-date">
+        <div class="day-dot" style="color: #a06020"></div>
+        <div class="day-num">APR 16</div>
+      </div>
+      <div class="day-card">
+        <div class="day-header">
+          <div class="day-title">Nara Day Trip → Kyoto</div>
+          <div class="day-subtitle">Thursday · Day 3</div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-temple">Temples</span>
+          <span class="tag tag-nature">Nature</span>
+          <span class="tag tag-hike">Walking</span>
+          <span class="tag tag-travel">Travel</span>
+        </div>
+        <ul class="schedule">
+          <li>
+            <span class="sch-time">07:22</span>
+            <span class="sch-icon">🚶</span>
+            <span class="sch-text"><strong>Walk to breakfast</strong> (~8 min)</span>
+          </li>
+          <li>
+            <span class="sch-time">07:30</span>
+            <span class="sch-icon">☕</span>
+            <span class="sch-text"><strong>Melbourne Coffee Senba</strong> (~1 hr)
+              <div class="btn-row">
+                <a href="https://maps.app.goo.gl/mbqZVQKqHSD9KLe96" target="_blank" class="btn-link btn-map">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Location
+                </a>
+              </div>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">10:00</span>
+            <span class="sch-icon">🏨</span>
+            <span class="sch-text"><strong>Checkout</strong> ParkCentral Sakura Hotel</span>
+          </li>
+          <li>
+            <span class="sch-time">10:15</span>
+            <span class="sch-icon">🚃</span>
+            <span class="sch-text"><strong>Train to Nara</strong> (~49 min)
+              <span class="sch-detail">¥780 per person</span>
+              <div class="btn-row">
+                <a href="https://maps.app.goo.gl/fMmESzddHLbLPSp2A" target="_blank" class="btn-link btn-map">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Train Route
+                </a>
+              </div>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">11:00</span>
+            <span class="sch-icon">🏛️</span>
+            <span class="sch-text"><strong>Todai-ji Temple</strong> — Japan's largest bronze Buddha
+              <div class="btn-row">
+                <a href="https://maps.app.goo.gl/Awhjj1FfYrm8Gzr17" target="_blank" class="btn-link btn-map">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Map
+                </a>
+              </div>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">~13:00</span>
+            <span class="sch-icon">🌿</span>
+            <span class="sch-text"><strong>Mt. Kasuga Primeval Forest</strong>
+              <span class="sch-detail">UNESCO-protected ancient forest. Quiet moss-covered trails with centuries-old cryptomeria trees — one of Japan's last old-growth forests.</span>
+              <div class="btn-row">
+                <a href="https://maps.app.goo.gl/9LB3ffeXX3JSGE7o6" target="_blank" class="btn-link btn-map">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Trailhead
+                </a>
+              </div>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">~15:00</span>
+            <span class="sch-icon">⛩️</span>
+            <span class="sch-text"><strong>Kasuga Taisha</strong> — Ancient shrine with stone lanterns
+              <div class="btn-row">
+                <a href="https://maps.app.goo.gl/5P7pj4QwN1onAsq97" target="_blank" class="btn-link btn-map">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Map
+                </a>
+              </div>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">18:00</span>
+            <span class="sch-icon">🚃</span>
+            <span class="sch-text"><strong>Train Nara → Kyoto</strong> (~1 hr)
+              <span class="sch-detail">¥910 per person</span>
+              <div class="btn-row">
+                <a href="https://maps.app.goo.gl/tfZKSgu2yJGYueUM6" target="_blank" class="btn-link btn-map">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Route
+                </a>
+              </div>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">19:00</span>
+            <span class="sch-icon">🍽️</span>
+            <span class="sch-text"><strong>Dinner in Kyoto</strong> — Then early bed, get breakfast for tomorrow</span>
+          </li>
+        </ul>
+        <div class="tip-box">
+          <strong>Potential add-on</strong>
+          Minoo Quasi-National Park — A beautiful waterfall hike near Osaka if you have extra time.
+        </div>
+      </div>
+    </div>
+
+    <!-- Day 4: Fri 17 Apr — Kyoto Recovery + Bikes -->
+    <div class="day" data-date="2026-04-17">
+      <div class="day-date">
+        <div class="day-dot" style="color: var(--accent-fuji)"></div>
+        <div class="day-num">APR 17</div>
+      </div>
+      <div class="day-card">
+        <div class="day-header">
+          <div class="day-title">Recovery Day & Bikes</div>
+          <div class="day-subtitle">Friday · Day 4</div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-bike">Bike Rental</span>
+          <span class="tag tag-culture">Shopping</span>
+          <span class="tag tag-reserved">Reserved</span>
+        </div>
+        <ul class="schedule">
+          <li>
+            <span class="sch-time">Morning</span>
+            <span class="sch-icon">😴</span>
+            <span class="sch-text"><strong>Sleep in</strong> — Recovery day</span>
+          </li>
+          <li>
+            <span class="sch-time">Morning</span>
+            <span class="sch-icon">☕</span>
+            <span class="sch-text"><strong>Breakfast</strong> — Coffee + Bakery</span>
+          </li>
+          <li>
+            <span class="sch-time">09:00</span>
+            <span class="sch-icon">🚲</span>
+            <span class="sch-text"><strong>Bike hire</strong>
+              <span class="sch-detail">No reservation needed. Rental for 3 full days (17th – 19th evening)</span>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">Daytime</span>
+            <span class="sch-icon">🛍️</span>
+            <span class="sch-text"><strong>Shopping</strong> — Kyoto Station, Uniqlo, etc.</span>
+          </li>
+          <li>
+            <span class="sch-time">19:00</span>
+            <span class="sch-icon">🍜</span>
+            <span class="sch-text"><strong>Noodle Shop Rennosuke</strong> (until ~21:00)
+              <div class="btn-row">
+                <a href="https://maps.app.goo.gl/TGkeR9RhK5Fg2x5K7" target="_blank" class="btn-link btn-map">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Restaurant
+                </a>
+              </div>
+            </span>
+          </li>
+        </ul>
+        <div class="reservation-badge">
+          <span class="rb-icon">📋</span>
+          <div>
+            <div class="rb-label">Reservation</div>
+            <div class="rb-id">Rennosuke · ID: 3RY6E3</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Day 5: Sat 18 Apr — Kyoto Bike Day -->
+    <div class="day" data-date="2026-04-18">
+      <div class="day-date">
+        <div class="day-dot" style="color: var(--accent-sakura)"></div>
+        <div class="day-num">APR 18</div>
+      </div>
+      <div class="day-card">
+        <div class="day-header">
+          <div class="day-title">Bike Day — Bamboo & Temples</div>
+          <div class="day-subtitle">Saturday · Day 5</div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-nature">Nature</span>
+          <span class="tag tag-temple">Temples</span>
+          <span class="tag tag-blossom">Cherry Blossoms</span>
+          <span class="tag tag-bike">By Bike</span>
+        </div>
+        <ul class="schedule">
+          <li>
+            <span class="sch-time">06:30</span>
+            <span class="sch-icon">☕</span>
+            <span class="sch-text"><strong>Breakfast</strong> — Coffee + Picknick provisions</span>
+          </li>
+          <li>
+            <span class="sch-time">07:00</span>
+            <span class="sch-icon">🎋</span>
+            <span class="sch-text"><strong>Bamboo Forest (Arashiyama)</strong> — Arrive early before crowds
+              <div class="btn-row">
+                <a href="https://maps.app.goo.gl/yNZfpTU69SW5k74RA" target="_blank" class="btn-link btn-map">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Bamboo Forest
+                </a>
+              </div>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">Morning</span>
+            <span class="sch-icon">🚲</span>
+            <span class="sch-text"><strong>Ride through Kyoto</strong></span>
+          </li>
+          <li>
+            <span class="sch-time">Midday</span>
+            <span class="sch-icon">🌸</span>
+            <span class="sch-text"><strong>Philosopher's Path & Maruyama Park</strong>
+              <span class="sch-detail">Iconic canal path lined with cherry trees</span>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">Afternoon</span>
+            <span class="sch-icon">⛩️</span>
+            <span class="sch-text"><strong>Ninenzaka & Kōdaiji Temple</strong>
+              <span class="sch-detail">Historic streets near Kiyomizu-dera</span>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">Until 16:00</span>
+            <span class="sch-icon">🎨</span>
+            <span class="sch-text"><strong>Handicraft Market</strong> — Very close to hotel
+              <div class="btn-row">
+                <a href="https://maps.app.goo.gl/3xM8tH7eFudRYp3t5" target="_blank" class="btn-link btn-map">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Market Location
+                </a>
+              </div>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">Evening</span>
+            <span class="sch-icon">🍣</span>
+            <span class="sch-text"><strong>Dinner at Nishiki Market</strong>
+              <span class="sch-detail">Kyoto's "Kitchen" — pickled veggies, sesame tofu, fresh mochi</span>
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Day 6: Sun 19 Apr — Mt Hiei + Return Bikes -->
+    <div class="day" data-date="2026-04-19">
+      <div class="day-date">
+        <div class="day-dot" style="color: var(--accent-moss)"></div>
+        <div class="day-num">APR 19</div>
+      </div>
+      <div class="day-card">
+        <div class="day-header">
+          <div class="day-title">Mount Hiei & Late Sakura</div>
+          <div class="day-subtitle">Sunday · Day 6</div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-hike">Hiking</span>
+          <span class="tag tag-blossom">Late Sakura</span>
+          <span class="tag tag-reserved">Reserved</span>
+        </div>
+        <ul class="schedule">
+          <li>
+            <span class="sch-time">06:00</span>
+            <span class="sch-icon">⛰️</span>
+            <span class="sch-text"><strong>Mount Hiei from Biwa Lake</strong>
+              <span class="sch-detail">Scenic mountain with temples and lake views</span>
+              <div class="btn-row">
+                <a href="https://maps.app.goo.gl/MAwpSxBs3Q72LaGS6" target="_blank" class="btn-link btn-map">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Mount Hiei
+                </a>
+              </div>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">Daytime</span>
+            <span class="sch-icon">🌸</span>
+            <span class="sch-text"><strong>Find late blooming sakura</strong></span>
+          </li>
+          <li>
+            <span class="sch-time">17:00</span>
+            <span class="sch-icon">🚲</span>
+            <span class="sch-text"><strong>Return bikes</strong></span>
+          </li>
+          <li>
+            <span class="sch-time">19:00</span>
+            <span class="sch-icon">🍜</span>
+            <span class="sch-text"><strong>Vegan Ramen UZU Kyoto</strong>
+              <div class="btn-row">
+                <a href="https://maps.app.goo.gl/HuqRj91j5oDb9MAf7" target="_blank" class="btn-link btn-map">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Restaurant
+                </a>
+              </div>
+            </span>
+          </li>
+        </ul>
+        <div class="reservation-badge">
+          <span class="rb-icon">📋</span>
+          <div>
+            <div class="rb-label">Reservation — No Perfume!</div>
+            <div class="rb-id">UZU Kyoto · ID: TRC45U</div>
+          </div>
+        </div>
+        <div class="tip-box">
+          <strong>Important</strong>
+          No perfume or strong scents at UZU Kyoto — this is part of their reservation policy.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TRAVEL: Kyoto → Lake Yamanaka ═══ -->
+  <div class="travel-connector">
+    <div class="tc-arrow">→</div>
+    <div class="tc-info">
+      <div class="tc-route">Kyoto → Lake Yamanaka (Fuji)</div>
+      <div class="tc-detail">Check-in from 16:00 at Vegetarian House Jamoo</div>
+    </div>
+  </div>
+
+  <!-- ═══ REGION 3: FUJI / LAKE YAMANAKA ═══ -->
+  <div class="region">
+    <div class="region-header">
+      <div class="region-num">03</div>
+      <div>
+        <div class="region-tag">Sacred Mountain · 2 Nights</div>
+        <div class="region-title">Lake Yamanaka</div>
+      </div>
+      <div class="region-dates">Apr 20 – 22<br><small>2 nights</small></div>
+    </div>
+
+    <!-- Day 7: Mon 20 Apr -->
+    <div class="day" data-date="2026-04-20">
+      <div class="day-date">
+        <div class="day-dot" style="color: var(--accent-gold)"></div>
+        <div class="day-num">APR 20</div>
+      </div>
+      <div class="day-card">
+        <div class="day-header">
+          <div class="day-title">Travel to Lake Yamanaka</div>
+          <div class="day-subtitle">Monday · Day 7</div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-travel">Travel</span>
+          <span class="tag tag-nature">Nature</span>
+        </div>
+        <ul class="schedule">
+          <li>
+            <span class="sch-time">Morning</span>
+            <span class="sch-icon">☕</span>
+            <span class="sch-text"><strong>Get Coffee</strong> — Find an amazing place for last Kyoto coffee</span>
+          </li>
+          <li>
+            <span class="sch-time">10:00</span>
+            <span class="sch-icon">🏨</span>
+            <span class="sch-text"><strong>Checkout</strong> APA Hotel Kyoto</span>
+          </li>
+          <li>
+            <span class="sch-time">Daytime</span>
+            <span class="sch-icon">🚃</span>
+            <span class="sch-text"><strong>Travel to Vegetarian House Jamoo</strong>
+              <span class="sch-detail">Lake Yamanaka, Fuji Five Lakes area</span>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">16:00+</span>
+            <span class="sch-icon">🏡</span>
+            <span class="sch-text"><strong>Check in</strong> Vegetarian House Jamoo
+              <span class="sch-detail">Check-in: 16:00 – 22:00</span>
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Day 8: Tue 21 Apr -->
+    <div class="day" data-date="2026-04-21">
+      <div class="day-date">
+        <div class="day-dot" style="color: var(--accent-sakura)"></div>
+        <div class="day-num">APR 21</div>
+      </div>
+      <div class="day-card">
+        <div class="day-header">
+          <div class="day-title">Lake Yamanaka & Fuji</div>
+          <div class="day-subtitle">Tuesday · Day 8</div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-nature">Nature</span>
+          <span class="tag tag-blossom">Cherry Blossoms</span>
+        </div>
+        <div class="empty-day">
+          Free day at Lake Yamanaka — enjoy the views of Mount Fuji, explore the lake area, and relax at the vegetarian guesthouse
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TRAVEL: Lake Yamanaka → Tokyo ═══ -->
+  <div class="travel-connector">
+    <div class="tc-arrow">→</div>
+    <div class="tc-info">
+      <div class="tc-route">Lake Yamanaka → Tokyo</div>
+      <div class="tc-detail">Checkout 06:00 – 10:00 · Travel to Asakusa, Tokyo</div>
+    </div>
+  </div>
+
+  <!-- ═══ REGION 4: TOKYO ═══ -->
+  <div class="region">
+    <div class="region-header">
+      <div class="region-num">04</div>
+      <div>
+        <div class="region-tag">Megacity · 4 Nights</div>
+        <div class="region-title">Tokyo</div>
+      </div>
+      <div class="region-dates">Apr 22 – 26<br><small>4 nights</small></div>
+    </div>
+
+    <!-- Day 9: Wed 22 Apr -->
+    <div class="day" data-date="2026-04-22">
+      <div class="day-date">
+        <div class="day-dot" style="color: var(--muted)"></div>
+        <div class="day-num">APR 22</div>
+      </div>
+      <div class="day-card">
+        <div class="day-header">
+          <div class="day-title">Arrive in Tokyo</div>
+          <div class="day-subtitle">Wednesday · Day 9</div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-travel">Travel</span>
+        </div>
+        <ul class="schedule">
+          <li>
+            <span class="sch-time">Morning</span>
+            <span class="sch-icon">🏨</span>
+            <span class="sch-text"><strong>Checkout</strong> Vegetarian House Jamoo (06:00 – 10:00)</span>
+          </li>
+          <li>
+            <span class="sch-time">Daytime</span>
+            <span class="sch-icon">🚃</span>
+            <span class="sch-text"><strong>Travel to Tokyo</strong></span>
+          </li>
+          <li>
+            <span class="sch-time">15:00+</span>
+            <span class="sch-icon">🏨</span>
+            <span class="sch-text"><strong>Check in</strong> ICHIYU Hotel Asakusa
+              <span class="sch-detail">Check-in: 15:00 – 00:00</span>
+            </span>
+          </li>
+          <li>
+            <span class="sch-time">Evening</span>
+            <span class="sch-icon">🌃</span>
+            <span class="sch-text"><strong>Explore Asakusa</strong> — Settle in, easy dinner nearby</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Days 10-12: Apr 23-25 -->
+    <div class="day" data-date="2026-04-23">
+      <div class="day-date">
+        <div class="day-dot" style="color: var(--accent-moss)"></div>
+        <div class="day-num">APR 23</div>
+      </div>
+      <div class="day-card">
+        <div class="day-header">
+          <div class="day-title">Tokyo Day 1</div>
+          <div class="day-subtitle">Thursday · Day 10</div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-culture">Culture</span>
+        </div>
+        <div class="empty-day">Open day — explore Tokyo at your own pace</div>
+      </div>
+    </div>
+
+    <div class="day" data-date="2026-04-24">
+      <div class="day-date">
+        <div class="day-dot" style="color: var(--accent-gold)"></div>
+        <div class="day-num">APR 24</div>
+      </div>
+      <div class="day-card">
+        <div class="day-header">
+          <div class="day-title">Tokyo Day 2</div>
+          <div class="day-subtitle">Friday · Day 11</div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-culture">Explore</span>
+        </div>
+        <div class="empty-day">Open day — explore Tokyo at your own pace</div>
+      </div>
+    </div>
+
+    <div class="day" data-date="2026-04-25">
+      <div class="day-date">
+        <div class="day-dot" style="color: var(--accent-sakura)"></div>
+        <div class="day-num">APR 25</div>
+      </div>
+      <div class="day-card">
+        <div class="day-header">
+          <div class="day-title">Tokyo Day 3</div>
+          <div class="day-subtitle">Saturday · Day 12</div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-culture">Explore</span>
+        </div>
+        <div class="empty-day">Open day — last full day in Tokyo</div>
+      </div>
+    </div>
+
+    <!-- Day 13: Apr 26 — Departure -->
+    <div class="day" data-date="2026-04-26">
+      <div class="day-date">
+        <div class="day-dot" style="color: var(--muted)"></div>
+        <div class="day-num">APR 26</div>
+      </div>
+      <div class="day-card">
+        <div class="day-header">
+          <div class="day-title">Checkout & Departure</div>
+          <div class="day-subtitle">Sunday · Day 13</div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-travel">Travel</span>
+        </div>
+        <ul class="schedule">
+          <li>
+            <span class="sch-time">08:00</span>
+            <span class="sch-icon">🏨</span>
+            <span class="sch-text"><strong>Checkout</strong> ICHIYU Hotel Asakusa (08:00 – 11:00)</span>
+          </li>
+          <li>
+            <span class="sch-time">Daytime</span>
+            <span class="sch-icon">✈️</span>
+            <span class="sch-text"><strong>Departure day</strong>
+              <span class="sch-detail">Safe travels home!</span>
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- TAB 2: HOTELS                          -->
+<!-- ═══════════════════════════════════════ -->
+<div class="tab-content" id="tab-hotels">
+  <div class="section-header">
+    <div class="subtitle">Accommodations & Dining</div>
+    <h2>Reservations</h2>
+  </div>
+
+  <!-- Hotel 1: Osaka -->
+  <div class="hotel-card">
+    <div class="hotel-accent" style="background: linear-gradient(90deg, var(--accent-sakura), #e899a8);"></div>
+    <div class="hotel-body">
+      <div class="hotel-region">Osaka · 2 Nights</div>
+      <div class="hotel-name">ParkCentral Sakura Hotel</div>
+      <div class="hotel-grid">
+        <div class="hotel-field">
+          <label>Check-in</label>
+          <div class="val">Apr 14 · 15:00–23:00</div>
+        </div>
+        <div class="hotel-field">
+          <label>Check-out</label>
+          <div class="val">Apr 16 · 11:00</div>
+        </div>
+        <div class="hotel-field">
+          <label>Confirmation #</label>
+          <div class="val mono">6564159386</div>
+        </div>
+        <div class="hotel-field">
+          <label>Pin Code</label>
+          <div class="val mono">9282</div>
+        </div>
+      </div>
+      <div class="hotel-address">
+        Osaka Prefecture, Osaka, 1-6-9 Bakuromachi, Chuo-ku, Japan
+      </div>
+      <div class="hotel-copy-row">
+        <button class="btn-copy" onclick="copyText('6564159386', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Conf #
+        </button>
+        <button class="btn-copy" onclick="copyText('9282', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Pin
+        </button>
+        <a href="https://www.google.com/maps/search/?api=1&query=ParkCentral+Sakura+Hotel+1-6-9+Bakuromachi+Chuo-ku+Osaka" target="_blank" class="btn-copy" style="text-decoration:none; color: var(--accent-fuji); background: #e8eff7; border-color: #c8ddf0;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Maps
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hotel 2: Kyoto -->
+  <div class="hotel-card">
+    <div class="hotel-accent" style="background: linear-gradient(90deg, var(--accent-moss), #6a9060);"></div>
+    <div class="hotel-body">
+      <div class="hotel-region">Kyoto · 4 Nights</div>
+      <div class="hotel-name">APA Hotel Kyoto Gojo Omiya</div>
+      <div class="hotel-grid">
+        <div class="hotel-field">
+          <label>Check-in</label>
+          <div class="val">Apr 16</div>
+        </div>
+        <div class="hotel-field">
+          <label>Check-out</label>
+          <div class="val">Apr 20</div>
+        </div>
+        <div class="hotel-field">
+          <label>Confirmation #</label>
+          <div class="val mono" style="font-size:11px;">17990865047761300000</div>
+        </div>
+        <div class="hotel-field">
+          <label>Pin Code</label>
+          <div class="val mono">138201</div>
+        </div>
+      </div>
+      <div class="hotel-address">
+        600-8372 Kyoto, Kyoto, 467 Minamimonzencho, Shimogyo-ku, Japan
+      </div>
+      <div class="hotel-copy-row">
+        <button class="btn-copy" onclick="copyText('17990865047761300000', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Conf #
+        </button>
+        <button class="btn-copy" onclick="copyText('138201', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Pin
+        </button>
+        <a href="https://www.google.com/maps/search/?api=1&query=APA+Hotel+Kyoto+Gojo+Omiya+467+Minamimonzencho+Shimogyo-ku+Kyoto" target="_blank" class="btn-copy" style="text-decoration:none; color: var(--accent-fuji); background: #e8eff7; border-color: #c8ddf0;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Maps
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hotel 3: Lake Yamanaka -->
+  <div class="hotel-card">
+    <div class="hotel-accent" style="background: linear-gradient(90deg, var(--accent-fuji), #7b9fc6);"></div>
+    <div class="hotel-body">
+      <div class="hotel-region">Lake Yamanaka · 2 Nights</div>
+      <div class="hotel-name">Vegetarian House Jamoo</div>
+      <div class="hotel-grid">
+        <div class="hotel-field">
+          <label>Check-in</label>
+          <div class="val">Apr 20 · 16:00–22:00</div>
+        </div>
+        <div class="hotel-field">
+          <label>Check-out</label>
+          <div class="val">Apr 22 · 06:00–10:00</div>
+        </div>
+        <div class="hotel-field">
+          <label>Confirmation #</label>
+          <div class="val mono">6764978985</div>
+        </div>
+        <div class="hotel-field">
+          <label>Pin Code</label>
+          <div class="val mono">6112</div>
+        </div>
+      </div>
+      <div class="hotel-address">
+        Yamanashi, Yamanakako, Hirano 506-533, Japan
+      </div>
+      <div class="hotel-copy-row">
+        <button class="btn-copy" onclick="copyText('6764978985', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Conf #
+        </button>
+        <button class="btn-copy" onclick="copyText('6112', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Pin
+        </button>
+        <a href="https://www.google.com/maps/search/?api=1&query=Vegetarian+House+Jamoo+Hirano+506-533+Yamanakako+Yamanashi" target="_blank" class="btn-copy" style="text-decoration:none; color: var(--accent-fuji); background: #e8eff7; border-color: #c8ddf0;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Maps
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hotel 4: Tokyo -->
+  <div class="hotel-card">
+    <div class="hotel-accent" style="background: linear-gradient(90deg, var(--accent-gold), #d8a44a);"></div>
+    <div class="hotel-body">
+      <div class="hotel-region">Tokyo · 4 Nights</div>
+      <div class="hotel-name">ICHIYU Hotel Asakusa</div>
+      <div class="hotel-grid">
+        <div class="hotel-field">
+          <label>Check-in</label>
+          <div class="val">Apr 22 · 15:00–00:00</div>
+        </div>
+        <div class="hotel-field">
+          <label>Check-out</label>
+          <div class="val">Apr 26 · 08:00–11:00</div>
+        </div>
+        <div class="hotel-field">
+          <label>Confirmation #</label>
+          <div class="val mono">5687333659</div>
+        </div>
+        <div class="hotel-field">
+          <label>Pin Code</label>
+          <div class="val mono">8439</div>
+        </div>
+      </div>
+      <div class="hotel-copy-row">
+        <button class="btn-copy" onclick="copyText('5687333659', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Conf #
+        </button>
+        <button class="btn-copy" onclick="copyText('8439', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Pin
+        </button>
+        <a href="https://www.google.com/maps/search/?api=1&query=ICHIYU+Hotel+Asakusa+Tokyo" target="_blank" class="btn-copy" style="text-decoration:none; color: var(--accent-fuji); background: #e8eff7; border-color: #c8ddf0;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Maps
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reservations Summary -->
+  <div class="section-header" style="padding-top: 12px;">
+    <div class="subtitle">Dining</div>
+    <h2>Reservations</h2>
+  </div>
+
+  <div class="hotel-card">
+    <div class="hotel-accent" style="background: linear-gradient(90deg, #c8943a, #daa850);"></div>
+    <div class="hotel-body">
+      <div class="hotel-region">Kyoto · Friday Apr 17</div>
+      <div class="hotel-name">Noodle Shop Rennosuke</div>
+      <div class="hotel-grid">
+        <div class="hotel-field">
+          <label>Time</label>
+          <div class="val">19:00 – 21:00</div>
+        </div>
+        <div class="hotel-field">
+          <label>Reservation ID</label>
+          <div class="val mono">3RY6E3</div>
+        </div>
+      </div>
+      <div class="hotel-copy-row">
+        <a href="https://maps.app.goo.gl/TGkeR9RhK5Fg2x5K7" target="_blank" class="btn-link btn-map" style="padding: 10px 18px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Open in Maps
+        </a>
+        <button class="btn-copy" onclick="copyText('3RY6E3', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy ID
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hotel-card">
+    <div class="hotel-accent" style="background: linear-gradient(90deg, var(--accent-sakura), #e899a8);"></div>
+    <div class="hotel-body">
+      <div class="hotel-region">Kyoto · Sunday Apr 19</div>
+      <div class="hotel-name">Vegan Ramen UZU Kyoto</div>
+      <div class="hotel-grid">
+        <div class="hotel-field">
+          <label>Time</label>
+          <div class="val">19:00</div>
+        </div>
+        <div class="hotel-field">
+          <label>Reservation ID</label>
+          <div class="val mono">TRC45U</div>
+        </div>
+      </div>
+      <div class="tip-box" style="margin-top:0; margin-bottom: 12px;">
+        <strong>Important</strong>
+        No perfume or strong scents — this is part of the reservation rules.
+      </div>
+      <div class="hotel-copy-row">
+        <a href="https://maps.app.goo.gl/HuqRj91j5oDb9MAf7" target="_blank" class="btn-link btn-map" style="padding: 10px 18px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Open in Maps
+        </a>
+        <button class="btn-copy" onclick="copyText('TRC45U', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy ID
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- TAB 3: TRANSPORT                       -->
+<!-- ═══════════════════════════════════════ -->
+<div class="tab-content" id="tab-transport">
+  <div class="section-header">
+    <div class="subtitle">Getting Around</div>
+    <h2>Transport</h2>
+  </div>
+
+  <div class="transport-card">
+    <div class="transport-route">
+      <div class="transport-dot" style="background: var(--accent-sakura);"></div>
+      <div class="transport-from">Osaka Airport</div>
+      <div class="transport-arrow">→</div>
+      <div class="transport-to">ParkCentral Sakura</div>
+    </div>
+    <div class="transport-meta">
+      <div class="transport-meta-item">🚃 Train</div>
+      <div class="transport-meta-item">¥1,910 / person</div>
+    </div>
+    <div class="btn-row" style="margin-top: 12px;">
+      <a href="https://maps.app.goo.gl/W95LpJ4KwUTh3QCq8" target="_blank" class="btn-link btn-direction">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Open Directions
+      </a>
+    </div>
+  </div>
+
+  <div class="transport-card">
+    <div class="transport-route">
+      <div class="transport-dot" style="background: var(--accent-sakura);"></div>
+      <div class="transport-from">ParkCentral Hotel</div>
+      <div class="transport-arrow">→</div>
+      <div class="transport-to">Nara</div>
+    </div>
+    <div class="transport-meta">
+      <div class="transport-meta-item">🚃 Train</div>
+      <div class="transport-meta-item">¥780 / person</div>
+      <div class="transport-meta-item">~49 min</div>
+    </div>
+    <div class="btn-row" style="margin-top: 12px;">
+      <a href="https://maps.app.goo.gl/fMmESzddHLbLPSp2A" target="_blank" class="btn-link btn-direction">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Open Directions
+      </a>
+    </div>
+  </div>
+
+  <div class="transport-card">
+    <div class="transport-route">
+      <div class="transport-dot" style="background: var(--accent-moss);"></div>
+      <div class="transport-from">Nara</div>
+      <div class="transport-arrow">→</div>
+      <div class="transport-to">APA Hotel Kyoto</div>
+    </div>
+    <div class="transport-meta">
+      <div class="transport-meta-item">🚃 Train</div>
+      <div class="transport-meta-item">¥910 / person</div>
+      <div class="transport-meta-item">~1 hr</div>
+    </div>
+    <div class="btn-row" style="margin-top: 12px;">
+      <a href="https://maps.app.goo.gl/tfZKSgu2yJGYueUM6" target="_blank" class="btn-link btn-direction">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Open Directions
+      </a>
+    </div>
+  </div>
+
+  <!-- Tips section -->
+  <div class="section-header" style="padding-top: 12px;">
+    <div class="subtitle">Tips</div>
+    <h2>Getting Around Japan</h2>
+  </div>
+
+  <div class="suggestion-card">
+    <h3>Suica / IC Card</h3>
+    <p>Get a Suica (or Icoca) card at the airport on arrival — it works on virtually every train, subway, and bus in Japan. Also accepted at convenience stores and vending machines. You can add it to Apple Pay or Google Pay before landing.</p>
+  </div>
+
+  <div class="suggestion-card">
+    <h3>Bike Rental — Kyoto</h3>
+    <p>No reservation needed. Pick up bikes on April 17 (from 9:00) and return them on April 19 (by 17:00). Three full days of cycling through Kyoto's temples, paths, and backstreets.</p>
+  </div>
+
+  <div class="suggestion-card">
+    <h3>Google Maps Works Great</h3>
+    <p>Google Maps has excellent coverage of Japanese public transport including real-time schedules, platform numbers, and walking routes. Download the Kansai and Kanto offline maps before departure.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- TAB 4: SUGGESTIONS                     -->
+<!-- ═══════════════════════════════════════ -->
+<div class="tab-content" id="tab-tips">
+  <div class="section-header">
+    <div class="subtitle">Ideas & Inspiration</div>
+    <h2>Suggestions</h2>
+  </div>
+
+  <!-- Osaka Suggestions -->
+  <div style="padding: 0 20px 8px;">
+    <div class="suggestion-region-tag" style="background: #fdeef2; color: var(--accent-sakura);">Osaka</div>
+  </div>
+
+  <div class="suggestion-card">
+    <h3>Minoo Quasi-National Park</h3>
+    <p>45 min from Namba by train. A 2.7 km forest trail to a 33 m waterfall through cedar and maple forest. Try the momiji tempura (deep-fried maple leaves) at trail stalls. Best visited early morning.</p>
+  </div>
+
+  <div class="suggestion-card">
+    <h3>Shinsekai Neighbourhood</h3>
+    <p>Retro 1950s-styled neighbourhood. Famous for kushikatsu (fried skewers). Lively and authentic atmosphere. Great for an evening visit.</p>
+  </div>
+
+  <!-- Kyoto Suggestions -->
+  <div style="padding: 12px 20px 8px;">
+    <div class="suggestion-region-tag" style="background: #e8f0e6; color: var(--accent-moss);">Kyoto</div>
+  </div>
+
+  <div class="suggestion-card">
+    <h3>Fushimi Inari at Dawn</h3>
+    <p>The full hike to Mt. Inari's summit (4 km, ~2 hrs) through thousands of vermillion torii gates. Open 24/7, no entry fee. The upper trails at dawn are nearly empty — an experience money can't buy. Best before sunrise.</p>
+  </div>
+
+  <div class="suggestion-card">
+    <h3>Kurama to Kibune Mountain Trail</h3>
+    <p>3.5 km mountain trail through ancient cedar forest. Visit Kibune Shrine with its water fortunes, then have kawadoko (river terrace) lunch over the river. End with Kurama Onsen — mountain hot springs surrounded by forest.</p>
+  </div>
+
+  <div class="suggestion-card">
+    <h3>Kinkaku-ji & Ryoan-ji</h3>
+    <p>The Gold Pavilion and Japan's most famous Zen rock garden are a 10-min walk apart. Go early (opens 9am) to beat crowds. The gold-leafed pavilion reflected in its mirror pond is iconic.</p>
+  </div>
+
+  <!-- Fuji Suggestions -->
+  <div style="padding: 12px 20px 8px;">
+    <div class="suggestion-region-tag" style="background: #e8eff7; color: var(--accent-fuji);">Fuji Area</div>
+  </div>
+
+  <div class="suggestion-card">
+    <h3>Chureito Pagoda</h3>
+    <p>398 steps to the iconic 5-storey pagoda with Mt. Fuji as backdrop. Cherry blossoms frame the view perfectly in mid-April. The single most photographed view in Japan.</p>
+  </div>
+
+  <div class="suggestion-card">
+    <h3>Cycle Lake Kawaguchi</h3>
+    <p>Rent bikes and circumnavigate the lake (20 km) with Fuji views throughout. The northern shore gives the classic reflection in still water. Combine with a visit to Aokigahara Forest.</p>
+  </div>
+
+  <!-- Tokyo Suggestions -->
+  <div style="padding: 12px 20px 8px;">
+    <div class="suggestion-region-tag" style="background: #f7eee5; color: #8a5520;">Tokyo</div>
+  </div>
+
+  <div class="suggestion-card">
+    <h3>TeamLab Planets</h3>
+    <p>Immersive digital art — walk barefoot through infinite flower rooms, crystal universes, and wade through water with koi. Book tickets well in advance via teamlab.art.</p>
+  </div>
+
+  <div class="suggestion-card">
+    <h3>Meiji Shrine & Shinjuku Gyoen</h3>
+    <p>170 acres of urban forest hiding the shrine. Then visit Shinjuku Gyoen Garden (¥500) for stunning late-blooming yaezakura cherry trees, typically peaking around Apr 20–25.</p>
+  </div>
+
+  <div class="suggestion-card">
+    <h3>Yanaka Old Town</h3>
+    <p>Tokyo's most charming neighbourhood. Narrow lanes, vintage shopfronts, temple cemeteries, stray cats, almost no tourists. A genuine glimpse of old Tokyo.</p>
+  </div>
+
+  <div class="suggestion-card">
+    <h3>Day Trip: Nikko</h3>
+    <p>2 hrs from Asakusa by train. 97 m Kegon Waterfall, Lake Chuzenji at 1,269 m altitude, and the ornate UNESCO Tosho-gu Shrine in ancient cedar forest. Cherry blossoms still bloom at this altitude in late April.</p>
+  </div>
+
+  <div class="suggestion-card">
+    <h3>Senso-ji & Asakusa</h3>
+    <p>Tokyo's oldest temple, right near your hotel. Go before 8am for total serenity. The Nakamise shopping lane is great for gifts and snacks. Take a water bus along the Sumida River.</p>
+  </div>
+
+  <div class="suggestion-card">
+    <h3>Shibuya Sky</h3>
+    <p>360° rooftop observation deck — book ahead for sunset. Then watch the famous Shibuya Crossing chaos from above.</p>
+  </div>
+
+  <!-- General Tips -->
+  <div style="padding: 12px 20px 8px;">
+    <div class="suggestion-region-tag" style="background: #f0ede8; color: var(--muted);">General Tips</div>
+  </div>
+
+  <div class="suggestion-card">
+    <h3>Vegetarian Dining Tips</h3>
+    <p>Look for restaurants with 精進料理 (shojin ryori / temple cuisine) or 菜食 signs. Kyoto is especially vegetarian-friendly. In Osaka, try the Namba area. Useful phrase: "Niku nashi de onegaishimasu" (without meat, please).</p>
+  </div>
+
+  <div class="suggestion-card">
+    <h3>Cash & Payments</h3>
+    <p>Japan is increasingly cashless but keep ¥10,000–¥20,000 in cash for smaller vendors, shrines, and rural areas. 7-Eleven ATMs accept international cards. Suica/IC cards handle most daily purchases.</p>
+  </div>
+
+  <div class="suggestion-card">
+    <h3>Cherry Blossom Timing</h3>
+    <p>You're in luck: Osaka & Kyoto will have late-blooming yaezakura around Apr 14–20. The Fuji Five Lakes area peaks mid-April — your timing is perfect. Tokyo may still have scattered late bloomers in Shinjuku Gyoen.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- TAB 5: MAP                             -->
+<!-- ═══════════════════════════════════════ -->
+<div class="tab-content" id="tab-map">
+  <div class="map-header">
+    <div class="subtitle">Your Journey</div>
+    <h2>Route Overview</h2>
+  </div>
+  <div class="map-legend">
+    <div class="map-legend-item"><div class="map-legend-dot" style="background: var(--accent-moss);"></div> Done</div>
+    <div class="map-legend-item"><div class="map-legend-dot" style="background: var(--accent-sakura);"></div> Today</div>
+    <div class="map-legend-item"><div class="map-legend-dot" style="background: var(--divider);"></div> Upcoming</div>
+    <div class="map-legend-item"><div class="map-legend-dot" style="background: var(--accent-gold); border-radius: 50%; height: 8px; width: 8px;"></div> Food</div>
+    <div class="map-legend-item"><div class="map-legend-dot" style="background: #a06020; border-radius: 50%; height: 8px; width: 8px;"></div> Temple</div>
+    <div class="map-legend-item"><div class="map-legend-dot" style="background: var(--accent-moss); border-radius: 50%; height: 8px; width: 8px;"></div> Nature</div>
+    <div class="map-legend-item"><div class="map-legend-dot" style="background: var(--accent-fuji); border-radius: 50%; height: 8px; width: 8px;"></div> Culture</div>
+  </div>
+  <div id="map"></div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- TAB BAR                                -->
+<!-- ═══════════════════════════════════════ -->
+<nav class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('itinerary')" id="btn-itinerary">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+    Itinerary
+  </button>
+  <button class="tab-btn" onclick="switchTab('hotels')" id="btn-hotels">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 21h18M3 7v14M21 7v14M6 21V10h4v11M14 21V10h4v11M10 7H4l8-4 8 4h-6"/></svg>
+    Reservations
+  </button>
+  <button class="tab-btn" onclick="switchTab('transport')" id="btn-transport">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+    Transport
+  </button>
+  <button class="tab-btn" onclick="switchTab('map')" id="btn-map">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+    Map
+  </button>
+  <button class="tab-btn" onclick="switchTab('tips')" id="btn-tips">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+    Ideas
+  </button>
+</nav>
+
+<!-- Scroll to top -->
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+// ── TAB SWITCHING ──
+let mapInitialized = false;
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+  document.getElementById('btn-' + tabId).classList.add('active');
+  window.scrollTo({ top: 0 });
+  if (tabId === 'map') {
+    if (!mapInitialized) { initMap(); mapInitialized = true; }
+    else { setTimeout(() => map.invalidateSize(), 100); }
+  }
+}
+
+// ── COPY TO CLIPBOARD ──
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.innerHTML;
+    btn.classList.add('copied');
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Copied!';
+    setTimeout(() => {
+      btn.innerHTML = orig;
+      btn.classList.remove('copied');
+    }, 1500);
+  });
+}
+
+// ── COUNTDOWN + DAILY WELCOME ──
+function updateCountdown() {
+  const tripStart = new Date('2026-04-14T00:00:00');
+  const tripEnd = new Date('2026-04-26T23:59:59');
+  const now = new Date();
+  const bar = document.getElementById('countdownBar');
+  const numEl = document.getElementById('countdownNum');
+  const textEl = document.getElementById('countdownText');
+  const welcomeEl = document.getElementById('welcomeMsg');
+
+  const dailyMessages = {
+    '2026-04-14': "Almost there Sabine! Hong Kong down, Japan next. Dotonbori street food tonight!",
+    '2026-04-15': "Morning Sabine! Horie's rooftop cafes and vintage shops are waiting. Maybe a custom perfume today — though you already smell great.",
+    '2026-04-16': "Sabine, today you get to meet 1,200 deer in Nara. Bet they'll love you as much as everyone else does.",
+    '2026-04-17': "Slow morning, Sabine. Coffee, bikes, and tonight you've got a table at Rennosuke. You've earned it.",
+    '2026-04-18': "Bamboo forest at dawn today Sabine — even the cherry blossoms will be jealous of you.",
+    '2026-04-19': "Sabine, Mount Hiei with lake views today, and tonight — Michelin-recognised vegan ramen at UZU.",
+    '2026-04-20': "One last Kyoto coffee, Sabine. Then it's off to the mountains. You make every city a little sad to see you leave.",
+    '2026-04-21': "Sabine, that's Mount Fuji outside your window. Even Japan's most beautiful mountain has competition today.",
+    '2026-04-22': "Tokyo day, Sabine! Asakusa is your home base — the prettiest traveller in the biggest city.",
+    '2026-04-23': "Good morning beautiful! A whole day in Tokyo — so much to discover.",
+    '2026-04-24': "Sabine, another Tokyo day. Every side street here has a surprise. Almost as lovely as you.",
+    '2026-04-25': "Last full day, Sabine. One more favourite spot to find. This trip is better because you're in it.",
+    '2026-04-26': "What a trip, Sabine. Japan was lucky to have you. Safe travels home."
+  };
+
+  if (now < tripStart) {
+    const diff = Math.ceil((tripStart - now) / (1000 * 60 * 60 * 24));
+    numEl.textContent = diff;
+    textEl.textContent = diff === 1 ? 'day until Japan!' : 'days until Japan!';
+    welcomeEl.textContent = '';
+  } else if (now >= tripStart && now <= tripEnd) {
+    const dayNum = Math.floor((now - tripStart) / (1000 * 60 * 60 * 24)) + 1;
+    numEl.textContent = 'Day ' + dayNum;
+    textEl.textContent = 'of your Japan adventure!';
+    bar.style.background = 'linear-gradient(135deg, var(--accent-moss), #3d7a33)';
+
+    const todayStr = now.toISOString().split('T')[0];
+    welcomeEl.textContent = dailyMessages[todayStr] || '';
+  } else {
+    bar.style.display = 'none';
+  }
+}
+updateCountdown();
+
+// ── HIGHLIGHT TODAY ──
+function highlightToday() {
+  const today = new Date().toISOString().split('T')[0];
+  document.querySelectorAll('.day[data-date]').forEach(day => {
+    if (day.dataset.date === today) {
+      const card = day.querySelector('.day-card');
+      card.classList.add('today');
+      const header = card.querySelector('.day-header');
+      const badge = document.createElement('span');
+      badge.className = 'today-badge';
+      badge.textContent = 'Today';
+      header.appendChild(badge);
+      setTimeout(() => {
+        day.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
+    }
+  });
+}
+highlightToday();
+
+// ── SCROLL TO TOP BUTTON ──
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('scrollTop');
+  btn.classList.toggle('visible', window.scrollY > 400);
+});
+
+// ── MAP ──
+let map;
+function initMap() {
+  // Locations with coordinates
+  const locations = {
+    osaka:    { lat: 34.6837, lng: 135.5023, name: 'Osaka',         hotel: 'ParkCentral Sakura' },
+    nara:     { lat: 34.6851, lng: 135.8398, name: 'Nara',          hotel: null },
+    kyoto:    { lat: 34.9958, lng: 135.7442, name: 'Kyoto',         hotel: 'APA Hotel Gojo Omiya' },
+    yamanaka: { lat: 35.4117, lng: 138.8717, name: 'Lake Yamanaka', hotel: 'Vegetarian House Jamoo' },
+    tokyo:    { lat: 35.7148, lng: 139.7967, name: 'Tokyo',         hotel: 'ICHIYU Hotel Asakusa' }
+  };
+
+  // Route segments: which days you're at each place / traveling between
+  // Each segment: [fromKey, toKey, startDate, endDate]
+  const segments = [
+    { from: 'osaka',    to: 'osaka',    dates: ['2026-04-14', '2026-04-15'] },  // Osaka stay
+    { from: 'osaka',    to: 'nara',     dates: ['2026-04-16'] },                 // Travel to Nara
+    { from: 'nara',     to: 'kyoto',    dates: ['2026-04-16'] },                 // Nara → Kyoto (same day)
+    { from: 'kyoto',    to: 'kyoto',    dates: ['2026-04-17', '2026-04-18', '2026-04-19'] }, // Kyoto stay
+    { from: 'kyoto',    to: 'yamanaka', dates: ['2026-04-20'] },                 // Travel to Yamanaka
+    { from: 'yamanaka', to: 'yamanaka', dates: ['2026-04-21'] },                 // Yamanaka stay
+    { from: 'yamanaka', to: 'tokyo',    dates: ['2026-04-22'] },                 // Travel to Tokyo
+    { from: 'tokyo',    to: 'tokyo',    dates: ['2026-04-23', '2026-04-24', '2026-04-25', '2026-04-26'] } // Tokyo stay
+  ];
+
+  // Route path (the line to draw on the map, in travel order)
+  const routePoints = [
+    [locations.osaka.lat, locations.osaka.lng],
+    [locations.nara.lat, locations.nara.lng],
+    [locations.kyoto.lat, locations.kyoto.lng],
+    // Curve through central Japan toward Fuji area
+    [35.0, 136.2],
+    [35.1, 136.8],
+    [35.2, 137.4],
+    [35.3, 138.0],
+    [locations.yamanaka.lat, locations.yamanaka.lng],
+    // Continue to Tokyo
+    [35.55, 139.1],
+    [locations.tokyo.lat, locations.tokyo.lng]
+  ];
+
+  // Route sub-paths for coloring (indices into routePoints)
+  const routeSegments = [
+    { from: 'osaka',    to: 'nara',     points: [0, 1] },
+    { from: 'nara',     to: 'kyoto',    points: [1, 2] },
+    { from: 'kyoto',    to: 'yamanaka', points: [2, 3, 4, 5, 6, 7] },
+    { from: 'yamanaka', to: 'tokyo',    points: [7, 8, 9] }
+  ];
+
+  // Determine today's status
+  const today = new Date().toISOString().split('T')[0];
+
+  function getLocationForDate(dateStr) {
+    for (const seg of segments) {
+      if (seg.dates.includes(dateStr)) {
+        // If staying at a place (from === to), return that place
+        if (seg.from === seg.to) return seg.from;
+        // If traveling, return destination
+        return seg.to;
+      }
+    }
+    return null;
+  }
+
+  function getSegmentStatus(segFrom, segTo) {
+    // Find the segment dates for this route
+    const travelSeg = segments.find(s => s.from === segFrom && s.to === segTo && s.from !== s.to);
+    if (!travelSeg) return 'upcoming';
+
+    const segDate = travelSeg.dates[0];
+    if (today > segDate) return 'completed';
+    if (today === segDate) return 'today';
+    return 'upcoming';
+  }
+
+  const currentLocation = getLocationForDate(today);
+
+  // Initialize map
+  map = L.map('map', {
+    zoomControl: false,
+    attributionControl: false
+  }).setView([35.1, 137.0], 7);
+
+  L.control.zoom({ position: 'topright' }).addTo(map);
+
+  // Tile layer — clean style
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 18,
+    subdomains: 'abcd'
+  }).addTo(map);
+
+  // Draw route segments with colors
+  const colors = {
+    completed: '#4a6741',
+    today: '#d4748a',
+    upcoming: '#ddd5c8'
+  };
+
+  routeSegments.forEach(seg => {
+    const status = getSegmentStatus(seg.from, seg.to);
+    const points = seg.points.map(i => routePoints[i]);
+
+    L.polyline(points, {
+      color: colors[status],
+      weight: status === 'today' ? 4 : 3,
+      opacity: status === 'upcoming' ? 0.5 : 0.9,
+      dashArray: status === 'upcoming' ? '8 8' : null,
+      lineCap: 'round',
+      lineJoin: 'round'
+    }).addTo(map);
+  });
+
+  // Add location markers (cities/hotels)
+  Object.entries(locations).forEach(([key, loc]) => {
+    const isCurrentLoc = key === currentLocation;
+    const isNara = key === 'nara';
+
+    let icon;
+    if (isCurrentLoc) {
+      icon = L.divIcon({
+        className: '',
+        html: '<div class="today-marker"></div>',
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+      });
+    } else {
+      const size = isNara ? 10 : 14;
+      const bgColor = isNara ? '#8a7f74' : '#1a1410';
+      icon = L.divIcon({
+        className: '',
+        html: `<div style="width:${size}px;height:${size}px;background:${bgColor};border:2px solid white;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>`,
+        iconSize: [size, size],
+        iconAnchor: [size/2, size/2]
+      });
+    }
+
+    const marker = L.marker([loc.lat, loc.lng], { icon }).addTo(map);
+
+    const labelClass = isCurrentLoc ? 'map-location-label active-location' : 'map-location-label';
+    const labelText = isCurrentLoc ? `${loc.name} — You are here` : loc.name;
+
+    marker.bindTooltip(labelText, {
+      permanent: true,
+      direction: key === 'kyoto' || key === 'nara' ? 'left' : 'right',
+      offset: key === 'kyoto' || key === 'nara' ? [-10, 0] : [10, 0],
+      className: labelClass
+    });
+
+    if (loc.hotel) {
+      marker.bindPopup(`
+        <div style="font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.5;min-width:160px;">
+          <strong style="font-size:14px;">${loc.name}</strong><br>
+          <span style="color:#8a7f74;font-size:11px;">${loc.hotel}</span>
+        </div>
+      `, { closeButton: false, offset: [0, -5] });
+    }
+  });
+
+  // ── Points of Interest ──
+  // Types: food (#c8943a), temple (#a06020), nature (#4a6741), culture (#5b7fa6)
+  const poiColors = { food: '#c8943a', temple: '#a06020', nature: '#4a6741', culture: '#5b7fa6' };
+
+  const pois = [
+    // ─── Osaka (Apr 14-15) ───
+    { lat: 34.6687, lng: 135.5013, name: 'Dotonbori',            type: 'food',    day: 'Apr 14', detail: 'Street food, neon lights, evening walk' },
+    { lat: 34.6692, lng: 135.4985, name: 'Vegan Dinner Spot',    type: 'food',    day: 'Apr 14', detail: 'Vegan dinner near Dotonbori', link: 'https://maps.app.goo.gl/rYxXMrNLePavEuqMA' },
+    { lat: 34.6755, lng: 135.4930, name: 'Horie District',       type: 'culture', day: 'Apr 15', detail: 'Vintage shops, Cafe Biotop, The Flavor Design' },
+    { lat: 34.6745, lng: 135.4953, name: 'Breakfast in Horie',   type: 'food',    day: 'Apr 15', detail: 'Morning breakfast spot', link: 'https://maps.app.goo.gl/4daytUNQV3EboVS67' },
+    { lat: 34.6720, lng: 135.4970, name: 'Amemura',              type: 'culture', day: 'Apr 15', detail: 'Vintage shops & cafes', link: 'https://maps.app.goo.gl/RA3FYEGSXD71Reso9' },
+    { lat: 34.6873, lng: 135.5262, name: 'Osaka Castle',         type: 'temple',  day: 'Apr 15', detail: 'Castle grounds & moat, cherry blossoms' },
+    { lat: 34.6870, lng: 135.5000, name: 'Melbourne Coffee Senba', type: 'food',  day: 'Apr 16', detail: 'Morning coffee 07:30–08:30', link: 'https://maps.app.goo.gl/mbqZVQKqHSD9KLe96' },
+
+    // ─── Nara (Apr 16) ───
+    { lat: 34.6890, lng: 135.8399, name: 'Todai-ji Temple',      type: 'temple',  day: 'Apr 16', detail: "Japan's largest bronze Buddha", link: 'https://maps.app.goo.gl/Awhjj1FfYrm8Gzr17' },
+    { lat: 34.6810, lng: 135.8520, name: 'Mt. Kasuga Primeval Forest', type: 'nature', day: 'Apr 16', detail: 'UNESCO ancient old-growth forest', link: 'https://maps.app.goo.gl/9LB3ffeXX3JSGE7o6' },
+    { lat: 34.6812, lng: 135.8498, name: 'Kasuga Taisha',        type: 'temple',  day: 'Apr 16', detail: 'Ancient shrine, stone lanterns', link: 'https://maps.app.goo.gl/5P7pj4QwN1onAsq97' },
+
+    // ─── Kyoto (Apr 17-19) ───
+    { lat: 34.9642, lng: 135.7478, name: 'Noodle Shop Rennosuke', type: 'food',   day: 'Apr 17', detail: 'Reserved 19:00–21:00 · ID: 3RY6E3', link: 'https://maps.app.goo.gl/TGkeR9RhK5Fg2x5K7' },
+    { lat: 35.0170, lng: 135.6713, name: 'Arashiyama Bamboo Forest', type: 'nature', day: 'Apr 18', detail: 'Go early 07:00 before crowds', link: 'https://maps.app.goo.gl/yNZfpTU69SW5k74RA' },
+    { lat: 35.0230, lng: 135.7940, name: "Philosopher's Path",   type: 'nature',  day: 'Apr 18', detail: 'Canal path lined with cherry trees' },
+    { lat: 35.0020, lng: 135.7812, name: 'Maruyama Park',        type: 'nature',  day: 'Apr 18', detail: 'Famous weeping cherry tree' },
+    { lat: 34.9952, lng: 135.7808, name: 'Ninenzaka & Kōdaiji',  type: 'temple',  day: 'Apr 18', detail: 'Historic streets near Kiyomizu-dera' },
+    { lat: 34.9960, lng: 135.7520, name: 'Handicraft Market',    type: 'culture', day: 'Apr 18', detail: 'Visit until 16:00, near hotel', link: 'https://maps.app.goo.gl/3xM8tH7eFudRYp3t5' },
+    { lat: 35.0050, lng: 135.7650, name: 'Nishiki Market',       type: 'food',    day: 'Apr 18', detail: "Kyoto's Kitchen — pickles, tofu, mochi" },
+    { lat: 35.0700, lng: 135.8400, name: 'Mount Hiei',           type: 'nature',  day: 'Apr 19', detail: 'Hike from Lake Biwa side, start 06:00', link: 'https://maps.app.goo.gl/MAwpSxBs3Q72LaGS6' },
+    { lat: 34.9675, lng: 135.7560, name: 'Vegan Ramen UZU',      type: 'food',    day: 'Apr 19', detail: 'Reserved 19:00 · No perfume! · ID: TRC45U', link: 'https://maps.app.goo.gl/HuqRj91j5oDb9MAf7' },
+
+    // ─── Lake Yamanaka (Apr 20-21) ───
+    { lat: 35.4200, lng: 138.8600, name: 'Lake Yamanaka Shore',  type: 'nature',  day: 'Apr 21', detail: 'Lake walks with Mt. Fuji views' },
+
+    // ─── Tokyo (Apr 22-25) ───
+    { lat: 35.7147, lng: 139.7966, name: 'Senso-ji Temple',      type: 'temple',  day: 'Apr 22+', detail: 'Oldest temple in Tokyo, right by hotel' },
+    { lat: 35.6764, lng: 139.6993, name: 'Meiji Jingu Shrine',   type: 'temple',  day: 'Suggestion', detail: '170 acres of urban forest' },
+    { lat: 35.6852, lng: 139.7100, name: 'Shinjuku Gyoen',       type: 'nature',  day: 'Suggestion', detail: 'Late yaezakura cherry blossoms, ¥500' },
+    { lat: 35.6580, lng: 139.7016, name: 'Shibuya Sky',          type: 'culture', day: 'Suggestion', detail: '360° rooftop deck — book for sunset' },
+    { lat: 35.6654, lng: 139.7707, name: 'TeamLab Planets',      type: 'culture', day: 'Suggestion', detail: 'Immersive digital art — book ahead!' },
+    { lat: 35.7223, lng: 139.7726, name: 'Yanaka Old Town',      type: 'culture', day: 'Suggestion', detail: 'Charming lanes, vintage shops, cats' },
+  ];
+
+  // Add POI markers
+  pois.forEach(poi => {
+    const color = poiColors[poi.type];
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="width:10px;height:10px;background:${color};border:2px solid white;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`,
+      iconSize: [10, 10],
+      iconAnchor: [5, 5]
+    });
+
+    const marker = L.marker([poi.lat, poi.lng], { icon }).addTo(map);
+
+    const linkHtml = poi.link
+      ? `<br><a href="${poi.link}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:5px 10px;background:#e8eff7;color:#5b7fa6;border-radius:12px;font-size:11px;font-weight:500;text-decoration:none;">
+           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+           Open in Maps
+         </a>`
+      : '';
+
+    marker.bindPopup(`
+      <div style="font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.5;min-width:170px;max-width:220px;">
+        <strong style="font-size:14px;">${poi.name}</strong><br>
+        <span style="display:inline-block;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:1px 6px;border-radius:8px;background:${color}22;color:${color};font-weight:500;margin:3px 0;">${poi.type} · ${poi.day}</span><br>
+        <span style="color:#8a7f74;font-size:12px;">${poi.detail}</span>
+        ${linkHtml}
+      </div>
+    `, { closeButton: false, offset: [0, -5], maxWidth: 240 });
+  });
+
+  // Fit map to show all points
+  const allCoords = Object.values(locations).map(l => [l.lat, l.lng]);
+  map.fitBounds(L.latLngBounds(allCoords).pad(0.15));
+
+  // If we're on the trip, center on current location
+  if (currentLocation && locations[currentLocation]) {
+    setTimeout(() => {
+      map.setView([locations[currentLocation].lat, locations[currentLocation].lng], 12, { animate: true });
+    }, 800);
+  }
+}
+
+// ── SERVICE WORKER REGISTRATION ──
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>

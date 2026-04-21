@@ -1528,8 +1528,22 @@ body {
         </div>
         <div class="tags">
           <span class="tag tag-culture">Explore</span>
+          <span class="tag" style="background: #1e1a2e; color: #b0a0d8;">Night Out</span>
         </div>
-        <div class="empty-day">Open day — explore Tokyo at your own pace</div>
+        <ul class="schedule">
+          <li>
+            <span class="sch-time">Daytime</span>
+            <span class="sch-icon">🗼</span>
+            <span class="sch-text"><strong>Free day</strong> — explore Tokyo at your own pace</span>
+          </li>
+          <li>
+            <span class="sch-time">23:00</span>
+            <span class="sch-icon">🎶</span>
+            <span class="sch-text"><strong>OTO — Mac Declos</strong>
+              <span class="sch-detail">Ohjo Bldg, Kabukicho, Shinjuku · until 05:00</span>
+            </span>
+          </li>
+        </ul>
       </div>
     </div>
 
@@ -1831,6 +1845,76 @@ body {
       </div>
     </div>
   </div>
+
+  <!-- Activities & Tickets -->
+  <div class="section-header" style="padding-top: 12px;">
+    <div class="subtitle">Activities</div>
+    <h2>Tickets</h2>
+  </div>
+
+  <div class="hotel-card">
+    <div class="hotel-accent" style="background: linear-gradient(90deg, #7b5ea7, #a07bc8);"></div>
+    <div class="hotel-body">
+      <div class="hotel-region">Tokyo · Monday Apr 27</div>
+      <div class="hotel-name">teamLab Biovortex</div>
+      <div class="hotel-grid">
+        <div class="hotel-field">
+          <label>Time</label>
+          <div class="val">17:00 – 17:30</div>
+        </div>
+        <div class="hotel-field">
+          <label>Tickets</label>
+          <div class="val">2 Adults · ¥10,400</div>
+        </div>
+        <div class="hotel-field" style="grid-column: 1 / -1;">
+          <label>Inquiry #</label>
+          <div class="val mono">KYTNJ4N3UTUP4-0001</div>
+        </div>
+      </div>
+      <div class="hotel-copy-row">
+        <button class="btn-copy" onclick="copyText('KYTNJ4N3UTUP4-0001', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Inquiry #
+        </button>
+        <a href="https://kyoto.tickets.teamlab.art/tickets/#/id/0wFsKyOsNtz7M3NnQmkywsBAehr9ywtDeE3yPEpMwHggNzBNgdjQzaUUF2llGVQ6?lang=en" target="_blank" class="btn-copy" style="text-decoration:none; color: #7b5ea7; background: #f0ebf7; border-color: #d4c4eb;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          View Ticket
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="hotel-card">
+    <div class="hotel-accent" style="background: linear-gradient(90deg, #1e1a2e, #4a3a6e);"></div>
+    <div class="hotel-body">
+      <div class="hotel-region">Tokyo · Friday Apr 24 → Saturday Apr 25</div>
+      <div class="hotel-name">OTO — Mac Declos</div>
+      <div class="hotel-grid">
+        <div class="hotel-field">
+          <label>Time</label>
+          <div class="val">23:00 – 05:00</div>
+        </div>
+        <div class="hotel-field">
+          <label>Tickets</label>
+          <div class="val">2 x General Admission · ¥6,566</div>
+        </div>
+        <div class="hotel-field" style="grid-column: 1 / -1;">
+          <label>Order #</label>
+          <div class="val mono">RA51275461-443</div>
+        </div>
+        <div class="hotel-field" style="grid-column: 1 / -1;">
+          <label>Venue</label>
+          <div class="val">Ohjo Bldg, 1-13-2 Kabukicho, Shinjuku</div>
+        </div>
+      </div>
+      <div class="hotel-copy-row">
+        <button class="btn-copy" onclick="copyText('RA51275461-443', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Order #
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════════════ -->
@@ -1940,6 +2024,86 @@ body {
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
         Directions
       </a>
+    </div>
+  </div>
+
+  <div class="transport-card">
+    <div class="transport-route">
+      <div class="transport-dot" style="background: var(--accent-moss);"></div>
+      <div class="transport-from">Lake Yamanaka</div>
+      <div class="transport-arrow">→</div>
+      <div class="transport-to">Shinjuku</div>
+    </div>
+    <div class="transport-meta">
+      <div class="transport-meta-item">🚌 Highway Bus · Route 1108</div>
+      <div class="transport-meta-item">Apr 22 · 11:38→Busta Shinjuku</div>
+      <div class="transport-meta-item">¥4,600 total</div>
+    </div>
+    <div class="hotel-grid" style="margin-top: 12px;">
+      <div class="hotel-field">
+        <label>Reservation #</label>
+        <div class="val mono">180147953</div>
+      </div>
+      <div class="hotel-field">
+        <label>Seats</label>
+        <div class="val mono">Car 1 · 06C &amp; 06D</div>
+      </div>
+      <div class="hotel-field" style="grid-column: 1 / -1;">
+        <label>Boarding stop</label>
+        <div class="val">Yamanaka-kyokuiriguchi (dep. 11:38)</div>
+      </div>
+      <div class="hotel-field" style="grid-column: 1 / -1;">
+        <label>Alighting stop</label>
+        <div class="val">Busta Shinjuku (South Exit)</div>
+      </div>
+    </div>
+    <div class="hotel-copy-row" style="margin-top: 12px;">
+      <button class="btn-copy" onclick="copyText('180147953', this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copy Res #
+      </button>
+      <a href="https://www.highwaybus.com/gp/payment/payWebTicketFromMail?ab80c05fbd236ee0156b8d412e9480c3&ticket_type=mobile" target="_blank" class="btn-copy" style="text-decoration:none; color: var(--accent-moss); background: #e6ede4; border-color: #b8d0b4;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        View Ticket
+      </a>
+    </div>
+  </div>
+
+  <div class="transport-card">
+    <div class="transport-route">
+      <div class="transport-dot" style="background: var(--accent-gold);"></div>
+      <div class="transport-from">Shinagawa</div>
+      <div class="transport-arrow">→</div>
+      <div class="transport-to">Kyoto</div>
+    </div>
+    <div class="transport-meta">
+      <div class="transport-meta-item">🚄 Shinkansen · NOZOMI 69</div>
+      <div class="transport-meta-item">Apr 26 · 11:55→14:00</div>
+      <div class="transport-meta-item">~2h 05m</div>
+    </div>
+    <div class="hotel-grid" style="margin-top: 12px;">
+      <div class="hotel-field">
+        <label>Reservation #</label>
+        <div class="val mono">2005</div>
+      </div>
+      <div class="hotel-field">
+        <label>Seats</label>
+        <div class="val mono">Car 6 · 1-A &amp; 1-B</div>
+      </div>
+      <div class="hotel-field" style="grid-column: 1 / -1;">
+        <label>IC Card 1</label>
+        <div class="val mono">JW80F-B250-1143-9202</div>
+      </div>
+      <div class="hotel-field" style="grid-column: 1 / -1;">
+        <label>IC Card 2</label>
+        <div class="val mono">JW80F-2260-4124-2490</div>
+      </div>
+    </div>
+    <div class="hotel-copy-row" style="margin-top: 12px;">
+      <button class="btn-copy" onclick="copyText('2005', this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copy Res #
+      </button>
     </div>
   </div>
 

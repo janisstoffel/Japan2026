@@ -1528,8 +1528,22 @@ body {
         </div>
         <div class="tags">
           <span class="tag tag-culture">Explore</span>
+          <span class="tag" style="background: #1e1a2e; color: #b0a0d8;">Night Out</span>
         </div>
-        <div class="empty-day">Open day — explore Tokyo at your own pace</div>
+        <ul class="schedule">
+          <li>
+            <span class="sch-time">Daytime</span>
+            <span class="sch-icon">🗼</span>
+            <span class="sch-text"><strong>Free day</strong> — explore Tokyo at your own pace</span>
+          </li>
+          <li>
+            <span class="sch-time">23:00</span>
+            <span class="sch-icon">🎶</span>
+            <span class="sch-text"><strong>OTO — Mac Declos</strong>
+              <span class="sch-detail">Ohjo Bldg, Kabukicho, Shinjuku · until 05:00</span>
+            </span>
+          </li>
+        </ul>
       </div>
     </div>
 
@@ -1866,6 +1880,38 @@ body {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           View Ticket
         </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="hotel-card">
+    <div class="hotel-accent" style="background: linear-gradient(90deg, #1e1a2e, #4a3a6e);"></div>
+    <div class="hotel-body">
+      <div class="hotel-region">Tokyo · Friday Apr 24 → Saturday Apr 25</div>
+      <div class="hotel-name">OTO — Mac Declos</div>
+      <div class="hotel-grid">
+        <div class="hotel-field">
+          <label>Time</label>
+          <div class="val">23:00 – 05:00</div>
+        </div>
+        <div class="hotel-field">
+          <label>Tickets</label>
+          <div class="val">2 x General Admission · ¥6,566</div>
+        </div>
+        <div class="hotel-field" style="grid-column: 1 / -1;">
+          <label>Order #</label>
+          <div class="val mono">RA51275461-443</div>
+        </div>
+        <div class="hotel-field" style="grid-column: 1 / -1;">
+          <label>Venue</label>
+          <div class="val">Ohjo Bldg, 1-13-2 Kabukicho, Shinjuku</div>
+        </div>
+      </div>
+      <div class="hotel-copy-row">
+        <button class="btn-copy" onclick="copyText('RA51275461-443', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Order #
+        </button>
       </div>
     </div>
   </div>
